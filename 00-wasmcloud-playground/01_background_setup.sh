@@ -2,23 +2,29 @@
 
 # Stop k8s services
 # systemctl list-unit-files | grep enabled
-systemctl disable --now kubepods.slice &
-systemctl disable --now kubelet &
-ssh 172.30.2.2 "systemctl disable --now kubepods.slice; systemctl disable --now kubelet; rm -rf /root/.kube" &
-rm -rf /root/.kube
+DISABLE_K8S="systemctl disable --now kubepods.slice; systemctl disable --now kubelet; rm -rf /root/.kube"
+ssh node01 $DISABLE_K8S &
+ssh controlplane $DISABLE_K8S &
 
 # Setup wash cli
-curl -s https://packagecloud.io/install/repositories/wasmcloud/core/script.deb.sh | bash
-apt install wash openssl direnv
-wash completions -d $HOME/.wash bash
-source $HOME/.wash/wash.bash
+SETUP_WASH_CLI="curl -s https://packagecloud.io/install/repositories/wasmcloud/core/script.deb.sh | bash && \
+DEBIAN_FRONTEND=noninteractive apt-get install -y wash openssl direnv && \
+echo '"'eval "$(direnv hook bash)"'"' >> ~/.bashrc"
+ssh controlplane $SETUP_WASH_CLI &
+ssh node01 $SETUP_WASH_CLI &
 
-# Setup wash on node01
-ssh node01 "curl -s https://packagecloud.io/install/repositories/wasmcloud/core/script.deb.sh | bash; apt install wash openssl direnv" &
-ssh node01 "wash completions -d $HOME/.wash bash; source $HOME/.wash/wash.bash" &
-# TODO: add CLUSTER_SEED
+cat << EOF > .envrc
+export WASMCLOUD_CLUSTER_SEED=$(openssl rand -hex 29 | tr '[:lower:]' '[:upper:]')
+EOF
 
-wash up --detached
+bash ~/multinode-setup.sh
+wait
+
+source ~/.envrc 
+echo "WASMCLOUD_CLUSTER_SEED: $WASMCLOUD_CLUSTER_SEED"
+wash up --nats-port 4223 --cluster-seed $WASMCLOUD_CLUSTER_SEED --detach
+
+scp /root/.local/share/nats/nsc/keys/creds/local/APP/wash.creds 172.30.2.2:
+ssh 172.30.2.2 "wash up --nats-remote-url nats://172.30.1.2 --nats-port 4223 --nats-credsfile wash.creds --cluster-seed $WASMCLOUD_CLUSTER_SEED --detach"
 
 touch /tmp/finished
-wait
