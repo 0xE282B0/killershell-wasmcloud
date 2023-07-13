@@ -1,11 +1,12 @@
 curl -LO https://github.com/nats-io/nats-server/releases/download/v2.9.19/nats-server-v2.9.19-amd64.deb &
 curl -LO https://github.com/nats-io/natscli/releases/download/v0.0.35/nats-0.0.35-amd64.deb &
-curl -L https://raw.githubusercontent.com/nats-io/nsc/master/install.py | python &
+curl -L https://raw.githubusercontent.com/nats-io/nsc/master/install.py | python
+
+echo 'export PATH="$PATH:/root/.nsccli/bin"' >> $HOME/.bashrc
+source $HOME/.bashrc
+ln -s /root/.nsccli/bin/nsc /bin
 
 wait
-EXTEND_PATH='export PATH="$PATH:/root/.nsccli/bin"'
-echo $EXTEND_PATH >> $HOME/.bashrc && $EXTEND_PATH
-
 dpkg -i nats-server-v2.9.19-amd64.deb 
 dpkg -i nats-0.0.35-amd64.deb 
 
