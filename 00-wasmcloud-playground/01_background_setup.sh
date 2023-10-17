@@ -18,10 +18,10 @@ echo $SET_SEED >> ~/.bashrc && $SET_SEED
 bash ~/multinode-setup.sh
 wait
 
-echo "WASMCLOUD_CLUSTER_SEED: $WASMCLOUD_CLUSTER_SEED"
-wash up --nats-port 4223 --cluster-seed $WASMCLOUD_CLUSTER_SEED --detach
-
-scp /root/.local/share/nats/nsc/keys/creds/local/APP/wash.creds 172.30.2.2:
-nohup ssh 172.30.2.2 "wash up --detach --nats-remote-url nats://172.30.1.2 --nats-port 4223 --nats-credsfile wash.creds --cluster-seed $WASMCLOUD_CLUSTER_SEED"
-
+#echo "WASMCLOUD_CLUSTER_SEED: $WASMCLOUD_CLUSTER_SEED"
+#wash up --nats-port 4223 --cluster-seed $WASMCLOUD_CLUSTER_SEED --detach
+#
+#scp /root/.local/share/nats/nsc/keys/creds/local/APP/wash.creds 172.30.2.2:
+#nohup ssh 172.30.2.2 "wash up --detach --nats-remote-url nats://172.30.1.2 --nats-port 4223 --nats-credsfile wash.creds --cluster-seed $WASMCLOUD_CLUSTER_SEED"
+#
 touch /tmp/finished
